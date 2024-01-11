@@ -23,6 +23,8 @@ public class Sha256MessageDigest {
         byte[][] chunks = breakIntoChunks(messageBlock);
         // Create message schedules with data from chunks
         int[][] messageSchedules = createMessageSchedules(chunks);
+        // Compute words from 16th to 64th in each message schedule
+        int[][] expandedMessageSchedules = computeMessageSchedules(messageSchedules);
 
         return null;
     }
@@ -85,5 +87,52 @@ public class Sha256MessageDigest {
             }
         }
         return messageSchedules;
+    }
+
+    private int[][] computeMessageSchedules(int[][] messageSchedules) {
+        // Step 8: For every message schedule compute the words
+        // from 16th to 64th according to the following formula:
+        //
+        //     Wj = Wj-16 + σ0(Wj-15) + Wj-7 + σ1(Wj-2)
+        //
+        // Each value should then be computed as Wj mod 2^32 to fit into a 32-bit word
+        for (int[] messageSchedule : messageSchedules) {
+            for (int j = 16; j < 64; j++) {
+
+                int w0 = messageSchedule[j - 16];
+                int s0 = smallSigma0(messageSchedule[j - 15]);
+                int w1 = messageSchedule[j - 7];
+                int s1 = smallSigma1(messageSchedule[j - 2]);
+
+                messageSchedule[j] = w0 + s0 + w1 + s1;
+            }
+        }
+        return  messageSchedules;
+    }
+
+    private int smallSigma0(int x) {
+        // Simple function that uses bitwise operations
+        //
+        // Rotate the bits to the right by 7 positions
+        // Rotate the bits to the right by 18 positions
+        // Right shift the bits by 3 positions
+        //
+        // Apply bitwise XOR to the rotated and shifted values
+        return Integer.rotateRight(x,7) ^
+                Integer.rotateRight(x,18) ^
+                (x >>> 3);
+    }
+
+    private int smallSigma1(int x) {
+        // Simple function that uses bitwise operations
+        //
+        // Rotate the bits to the right by 17 positions
+        // Rotate the bits to the right by 19 positions
+        // Right shift the bits by 10 positions
+        //
+        // Apply bitwise XOR to the rotated and shifted values
+        return Integer.rotateRight(x,17) ^
+                Integer.rotateRight(x,19) ^
+                (x >>> 10);
     }
 }

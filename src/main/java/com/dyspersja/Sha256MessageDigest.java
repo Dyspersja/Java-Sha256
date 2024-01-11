@@ -17,6 +17,11 @@ public class Sha256MessageDigest {
     }
 
     private byte[] generate(byte[] sourceBytes) {
+        // Prepare the message, make its length a multiple of 512
+        byte[] messageBlock = createMessageBlock(sourceBytes);
+        // Step 5: Break prepared message into 512-bit chunks
+        byte[][] chunks = breakIntoChunks(messageBlock);
+
         return null;
     }
 
@@ -41,5 +46,22 @@ public class Sha256MessageDigest {
     private int calculatePaddingLength(int sourceLength) {
         // Calculate the length of the padded area
         return (512 - (sourceLength * 8 + 64) % 512) / 8;
+    }
+
+    private byte[][] breakIntoChunks(byte[] messageBlock) {
+        // Prepare a two-dimensional array to store the 512-bit parts in
+        byte[][] chunks = new byte[messageBlock.length / (512 / 8)][(512 / 8)];
+
+        // Copy each 512-bit part of prepared messageBlock to two-dimensional array
+        for (int i = 0; i < messageBlock.length / (512 / 8); i++) {
+            System.arraycopy(
+                messageBlock,   // Source array from which values are copied
+                i * (512 / 8),  // Starting position in source array
+                chunks[i],      // Destination array to which values are copied
+                0,              // Starting position in destination array
+                (512 / 8)       // Number of elements to be copied
+            );
+        }
+        return chunks;
     }
 }

@@ -21,6 +21,8 @@ public class Sha256MessageDigest {
         byte[] messageBlock = createMessageBlock(sourceBytes);
         // Step 5: Break prepared message into 512-bit chunks
         byte[][] chunks = breakIntoChunks(messageBlock);
+        // Create message schedules with data from chunks
+        int[][] messageSchedules = createMessageSchedules(chunks);
 
         return null;
     }
@@ -63,5 +65,25 @@ public class Sha256MessageDigest {
             );
         }
         return chunks;
+    }
+
+    private int[][] createMessageSchedules(byte[][] chunks) {
+        // Step 6: Create a message schedule with 64 words each
+        // for every chunk, each word should be a 32-bit value
+        int[][] messageSchedules = new int[chunks.length][64];
+
+        // Step 7: For every 512-bit chunk break it into 16 32-bit words
+        // and write them into first 16 entries of its message schedule
+        for (int i = 0; i < chunks.length; i++) {
+            for (int j = 0; j < 16; j++) {
+                // Convert every 4 bytes from byte array into single int
+                messageSchedules[i][j] =
+                        ((chunks[i][j * 4] & 0xFF) << 24) |
+                        ((chunks[i][j * 4 + 1] & 0xFF) << 16) |
+                        ((chunks[i][j * 4 + 2] & 0xFF) << 8) |
+                        (chunks[i][j * 4 + 3] & 0xFF);
+            }
+        }
+        return messageSchedules;
     }
 }

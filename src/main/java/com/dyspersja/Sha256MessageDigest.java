@@ -21,7 +21,7 @@ public class Sha256MessageDigest {
     }
 
     private byte[] createMessageBlock(byte[] sourceBytes) {
-        int paddingLength = calculatePaddingLength(sourceBytes);
+        int paddingLength = calculatePaddingLength(sourceBytes.length);
         int paddedLength = sourceBytes.length + paddingLength + (64 / 8);
 
         ByteBuffer buffer = ByteBuffer.allocate(paddedLength);
@@ -38,8 +38,8 @@ public class Sha256MessageDigest {
         return buffer.array();
     }
 
-    private int calculatePaddingLength(byte[] sourceBytes) {
+    private int calculatePaddingLength(int sourceLength) {
         // Calculate the length of the padded area
-        return (512 - (sourceBytes.length * 8 + 64) % 512) / 8;
+        return (512 - (sourceLength * 8 + 64) % 512) / 8;
     }
 }

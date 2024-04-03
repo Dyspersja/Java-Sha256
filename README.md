@@ -59,7 +59,7 @@ We begin this process by appending a single '1' to the end of the source data:
 01101110 01101001 01101110 01100111 00100000 01101000 01100101 01100001  
 01110010 01100100 00101110 *1*
 
-## Step 3: Append data with padding consisting of multiple '0's. 
+## Step 3: Append data with padding consisting of multiple '0's.
 
 Next, we need to prepare our data so that its length is a multiple of 512 in bits. However, it's important to note that the last 64 bits are reserved for the total length of the source message, encoded as an 64-bit integer. So, after adding padding with zeros, our message should have a length x ≡ 448 mod 512. (where 448 comes from the length of the last 512-bit block minus 64 bits of source message length). 
 
@@ -104,12 +104,40 @@ Below is the fully prepared message:
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000  
 *00000000 00000000 00000000 00000000 00000000 00000000 00000001 11011000*
 
+## Step 5: Break the prepared message into 512 bit chunks.
+
+Now, at this step, we need to divide our message into 512-bit chunks, each of which will be then processed individually using a set of bitwise operations, to finally calculate a 256-bit hash using the obtained values.
+
+At the end of the previous steps, we should get a message that's length is a multiple of 512 bits. If it's not, some error must have been made, most likely while adding padding to the original message on **Step 3**.
+
+Our example prepared message had a length of 1024 bits, so after dividing it, we received two 512 bit chunks shown below:
+
+Chunk 1:
+
+01010011 01100011 01100101 01101110 01100101 00100000 00110001 00100000  
+01000001 00100000 01110100 01100101 01101101 01110000 01100101 01110011  
+01110100 01110101 01101111 01110101 01110011 00100000 01101110 01101111  
+01101001 01110011 01100101 00100000 01101111 01100110 00100000 01110100  
+01101000 01110101 01101110 01100100 01100101 01110010 00100000 01100001  
+01101110 01100100 00100000 01101100 01101001 01100111 01101000 01110100  
+01101110 01101001 01101110 01100111 00100000 01101000 01100101 01100001  
+01110010 01100100 00101110 10000000 00000000 00000000 00000000 00000000
+
+Chunk 2:
+
+00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000  
+00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000  
+00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000  
+00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000  
+00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000  
+00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000  
+00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000  
+00000000 00000000 00000000 00000000 00000000 00000000 00000001 11011000
 
 <!-- Next steps to be added -->
 
 <!--
 
-## Step 5:
 ## Step 6:
 ## Step 7:
 ## Step 8:

@@ -134,13 +134,88 @@ Chunk 2:
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000  
 00000000 00000000 00000000 00000000 00000000 00000000 00000001 11011000
 
+## Step 6: Prepare message schedule
+
+Now we move on to the main part of the algorithm. In the first part, for each 512-bit block received in the previous steps, we need to prepare a message schedule consisting of 64 words, each 32 bits long.
+
+These message schedules will be used for decomposing each of the blocks. This step is done to maximize the spreading out of input changes throughout the output and to make the relationship between input and output complex and difficult to predict. 
+
+In the subsequent steps, I will provide examples for both blocks. Especially in the case of the second block, which consists mostly of zeros with single ones at the end, the resulting message schedule after computation will be completely unpredictable.
+
+Now, the empty message schedule for Chunk 1 looks as follows:
+
+0: 00000000 00000000 00000000 00000000  
+1: 00000000 00000000 00000000 00000000  
+2: 00000000 00000000 00000000 00000000  
+3: 00000000 00000000 00000000 00000000  
+...  
+63: 00000000 00000000 00000000 00000000
+
+## Step 7: Divide the block and assign it into the first 16 words of the message schedule
+
+In this step, we need to divide our 512-bit block into 16 32-bit sub-blocks and assign them sequentially to the first 16 words of the message scheduler.
+
+For the Chunk 1:
+
+0: 01010011 01100011 01100101 01101110  
+1: 01100101 00100000 00110001 00100000  
+2: 01000001 00100000 01110100 01100101  
+3: 01101101 01110000 01100101 01110011  
+4: 01110100 01110101 01101111 01110101  
+5: 01110011 00100000 01101110 01101111  
+6: 01101001 01110011 01100101 00100000  
+7: 01101111 01100110 00100000 01110100  
+8: 01101000 01110101 01101110 01100100  
+9: 01100101 01110010 00100000 01100001  
+10: 01101110 01100100 00100000 01101100  
+11: 01101001 01100111 01101000 01110100  
+12: 01101110 01101001 01101110 01100111  
+13: 00100000 01101000 01100101 01100001  
+14: 01110010 01100100 00101110 10000000  
+15: 00000000 00000000 00000000 00000000  
+16: 00000000 00000000 00000000 00000000  
+17: 00000000 00000000 00000000 00000000  
+18: 00000000 00000000 00000000 00000000  
+...  
+63: 00000000 00000000 00000000 00000000
+
+Words 0 through 15 have been assigned as initial values from the 512-bit block. Subsequent words from 16 to 63 will be calculated using simple bitwise operations on the previous words, such as rotation, shifting, or XOR operations.
+
+## Step 8: Calculating the remaining 16 to 63 words of the message scheduler
+
+Starting from word 16, each subsequent word must be computed using the previous ones and the following formula:
+
+```
+Wj = Wj-16 + σ0(Wj-15) + Wj-7 + σ1(Wj-2)
+```
+
+Where, from the beginning, Wj represents the word being currently calculated, 'j' is its index position in the message scheduler, Wj-n represents the word at index j-n, and σ0 and σ1 are functions operating on a single word.
+
+**A crucial point to mention is that the resulting word Wj must be of size 32 bits to be assigned back to the message scheduler. So, the operation '+' signifies mod 2<sup>32</sup> addition.**
+
+Below is the description of functions σ0 and σ1. Both functions utilize two bitwise rotation operations, bitwise shifting, and XOR-ing the results of these operations, but each with a slightly different number of bits.
+
+function **σ0**:
+
+```
+σ0(X) = RotR(X, 7) ⊕ RotR(X, 18) ⊕ (X >> 3)
+```
+
+- **RotR(X, 7)** Right rotation (circular shift) of the input word by 7 bits.
+- **RotR(X, 18)** Another right rotation of the input word by 18 bits.
+- **(X >> 3)** Right shift of the input word by 3 bits
+- **⊕** Finally, it performs a bitwise XOR operation between the results of the previous operations.
+
+function **σ1**: (It is very similar, differing only in the number of bits in the operations.)
+
+```
+σ1(X) = RotR(X, 17) ⊕ RotR(X, 19) ⊕ (X >> 10)
+```
+
 <!-- Next steps to be added -->
 
 <!--
 
-## Step 6:
-## Step 7:
-## Step 8:
 ## Step 9:
 ## Step 10:
 ## Step 11:

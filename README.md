@@ -134,7 +134,7 @@ Block 2:
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000  
 00000000 00000000 00000000 00000000 00000000 00000000 00000001 11011000
 
-## Step 6: Prepare message schedule
+## Step 6: Prepare message schedule.
 
 Now we move on to the main part of the algorithm. In the first part, for each 512-bit block received in the previous steps, we need to prepare a message schedule consisting of 64 words, each 32 bits long.
 
@@ -144,44 +144,44 @@ In the subsequent steps, I will provide examples for both blocks. Especially in 
 
 Now, the empty message schedule for Block 1 looks as follows:
 
-0: 00000000 00000000 00000000 00000000  
-1: 00000000 00000000 00000000 00000000  
-2: 00000000 00000000 00000000 00000000  
-3: 00000000 00000000 00000000 00000000  
+W0: 00000000 00000000 00000000 00000000  
+W1: 00000000 00000000 00000000 00000000  
+W2: 00000000 00000000 00000000 00000000  
+W3: 00000000 00000000 00000000 00000000  
 ...  
-63: 00000000 00000000 00000000 00000000
+W63: 00000000 00000000 00000000 00000000
 
-## Step 7: Divide the block and assign it into the first 16 words of the message schedule
+## Step 7: Divide the block and assign it into the first 16 words of the message schedule.
 
 In this step, we need to divide our 512-bit block into 16 32-bit sub-blocks and assign them sequentially to the first 16 words of the message scheduler.
 
 For the Block 1:
 
-0: 01010011 01100011 01100101 01101110  
-1: 01100101 00100000 00110001 00100000  
-2: 01000001 00100000 01110100 01100101  
-3: 01101101 01110000 01100101 01110011  
-4: 01110100 01110101 01101111 01110101  
-5: 01110011 00100000 01101110 01101111  
-6: 01101001 01110011 01100101 00100000  
-7: 01101111 01100110 00100000 01110100  
-8: 01101000 01110101 01101110 01100100  
-9: 01100101 01110010 00100000 01100001  
-10: 01101110 01100100 00100000 01101100  
-11: 01101001 01100111 01101000 01110100  
-12: 01101110 01101001 01101110 01100111  
-13: 00100000 01101000 01100101 01100001  
-14: 01110010 01100100 00101110 10000000  
-15: 00000000 00000000 00000000 00000000  
-16: 00000000 00000000 00000000 00000000  
-17: 00000000 00000000 00000000 00000000  
-18: 00000000 00000000 00000000 00000000  
+W0: 01010011 01100011 01100101 01101110  
+W1: 01100101 00100000 00110001 00100000  
+W2: 01000001 00100000 01110100 01100101  
+W3: 01101101 01110000 01100101 01110011  
+W4: 01110100 01110101 01101111 01110101  
+W5: 01110011 00100000 01101110 01101111  
+W6: 01101001 01110011 01100101 00100000  
+W7: 01101111 01100110 00100000 01110100  
+W8: 01101000 01110101 01101110 01100100  
+W9: 01100101 01110010 00100000 01100001  
+W10: 01101110 01100100 00100000 01101100  
+W11: 01101001 01100111 01101000 01110100  
+W12: 01101110 01101001 01101110 01100111  
+W13: 00100000 01101000 01100101 01100001  
+W14: 01110010 01100100 00101110 10000000  
+W15: 00000000 00000000 00000000 00000000  
+W16: 00000000 00000000 00000000 00000000  
+W17: 00000000 00000000 00000000 00000000  
+W18: 00000000 00000000 00000000 00000000  
 ...  
-63: 00000000 00000000 00000000 00000000
+W63: 00000000 00000000 00000000 00000000
 
 Words 0 through 15 have been assigned as initial values from the 512-bit block. Subsequent words from 16 to 63 will be calculated using simple bitwise operations on the previous words, such as rotation, shifting, or XOR operations.
 
-## Step 8: Calculate the remaining 16 to 63 words of the message scheduler
+## Step 8: Calculate the remaining 16 to 63 words of the message scheduler.
 
 Starting from word 16, each subsequent word must be computed using the previous ones and the following formula:
 
@@ -280,7 +280,7 @@ W63: 10111001 00111001 01100101 00001110
 
 As you can see, they are filled with values that are impossible to predict, and changing even one more zero to a one in that block would completely alter above values.
 
-## Step 9: Prepare the initial hash value for the new set of words
+## Step 9: Prepare the initial hash value for the new set of words.
 
 In this step, we begin the actual computation of the hash value. 
 
@@ -332,14 +332,206 @@ f = H<sub>i-1</sub><sup>(6)</sup>
 g = H<sub>i-1</sub><sup>(7)</sup>  
 h = H<sub>i-1</sub><sup>(8)</sup>  
 
+## Step 10: Calculate the intermediate hash value for each block.
 
+With registers from a to h prepared, we can proceed to the main computation of the hash value in the SHA-256 algorithm.
 
-<!-- Next steps to be added -->
+In this step, for each word 'Wj' in the message scheduler a total of 64 times, we perform the following operations.
 
-<!--
+h = g  
+g = f  
+f = e  
+e = d + Temp1  
+d = c  
+c = b  
+b = a  
+a = Temp1 + Temp2  
 
-## Step 10:
-## Step 11:
-## Step 12: 
+where:
 
--->
+Temp1 = h + Σ1(e) + Choice(e, f, g) + Kj + Wj  
+Temp2 = Σ0(a) + Majority(a, b, c)  
+
+Now we need to explain what Σ0 and Σ1 represent, as well as K and the Choice and Majority functions.
+
+----------------------------
+Let's start with K. These are 64 32-bit words obtained through a very similar process to the initial values H<sub>0</sub> from the previous step. But this time, we use cube roots instead of square roots.
+
+This time the constant K is calculated as the first 32 bits of the fractional part of the **cube roots** of the first 64 prime numbers. 
+
+K<sup>(1)</sup>: <sup>3</sup>√2 = 1.25992104989... = 1.01000010100010100010111110011000... => 01000010 10001010 00101111 10011000 = **428A 2F98**  
+
+-----------------------------------------------
+Now, functions Σ0 and Σ1. They are quite similar to σ0 and σ1, but they do not involve right shifts, only right rotations and XOR operations on the results of these rotations.
+
+computations for Σ0(a):
+```
+01101010 00001001 11100110 01100111 - a
+
+11011010 10000010 01111001 10011001 - right rotate 2  
+00110011 00111011 01010000 01001111 - right rotate 13  
+00100111 10011001 10011101 10101000 - right rotate 22
+
+11001110 00100000 10110100 01111110 - Σ0(a) // after XOR-ing above results
+```
+
+computations for Σ1(e):
+```
+01010001 00001110 01010010 01111111 - e
+
+11111101 01000100 00111001 01001001 - right rotate 6
+01001111 11101010 00100001 11001010 - right rotate 11
+10000111 00101001 00111111 10101000 - right rotate 25
+
+00110101 10000111 00100111 00101011 - Σ1(e) // after XOR-ing above results
+```
+
+-----------------------------------
+Now let's talk about the function Choice.
+
+It operates on three 32-bit words, always registers e, f and g. The choice function selects bits from f or g based on the value of the corresponding bit in e.
+
+In other words: For each bit position, it chooses the bit from register e. If the bit is 1, It sets the result bit to corresponding bit from register f. If the bit from e was 0 it takes the bit from register g.
+
+Mathematically, it can be expressed as:
+```
+Choice(e, f, g) = (e ∧ f) ⊕ ((¬e) ∧ g)
+```
+where:
+
+- ∧ denotes the bitwise AND operation.
+- ¬ denotes the bitwise NOT operation.
+- ⊕ denotes the bitwise XOR operation.
+
+Let's calculate the value of this function for our example.
+```
+01010001 00001110 01010010 01111111 - e
+10011011 00000101 01101000 10001100 - f
+00011111 10000011 11011001 10101011 - g
+
+00011111 10000101 11001001 10001100 - Choice(e, f, g)
+```
+
+-------------------------------------
+Now the last function to explain, Majority.
+
+It also operates on three 32-bit words, this time always registers a, b and c.
+
+For each bit position, it computes the majority of the bits at that position among the three input words. If there are more '0' than '1' bits, the result bit is set to '0' otherwise, it is set to '1'.
+
+Mathematically, the majority function can be expressed as:
+```
+Majority(a, b, c) = (a ∧ b) ⊕ (a ∧ c) ⊕ (b ∧ c)
+```
+
+computations for Majority(a, b, c)
+```
+01101010 00001001 11100110 01100111 - a
+10111011 01100111 10101110 10000101 - b
+00111100 01101110 11110011 01110010 - c
+
+00111010 01101111 11100110 01100111 - Majority(a, b, c)
+```
+
+Now that we have explained all the functions, let's calculate updated register values for the first word Wj in the message scheduler for the first block.
+
+Just to remind you, the register values are: (these are the values calculated in step 9)
+
+a: 01101010 00001001 11100110 01100111  
+b: 10111011 01100111 10101110 10000101  
+c: 00111100 01101110 11110011 01110010  
+d: 10100101 01001111 11110101 00111010  
+e: 01010001 00001110 01010010 01111111  
+f: 10011011 00000101 01101000 10001100  
+g: 00011111 10000011 11011001 10101011  
+h: 01011011 11100000 11001101 00011001  
+
+First, we need to calculate the values of Temp1 and Temp2.
+
+computations for Temp1
+```
+01011011 11100000 11001101 00011001 - h
+00110101 10000111 00100111 00101011 - Σ1(e)
+00011111 10000101 11001001 10001100 - Choice(e, f, g)
+01000010 10001010 00101111 10011000 - Kj
+01010011 01100011 01100101 01101110 - Wj
+
+01000110 11011011 01010010 11010110 - Temp1 // after mod 2^32 addition of above values
+```
+
+computations for Temp2
+```
+11001110 00100000 10110100 01111110 - Σ0(a)
+00111010 01101111 11100110 01100111 - Majority(a, b, c)
+
+00001000 10010000 10011010 11100101 - Temp2 // after mod 2^32 addition of above values
+```
+
+Now we can assign new values to the registers.
+
+a = 01001111 01101011 11101101 10111011 = Temp1 + Temp2  
+b = 01101010 00001001 11100110 01100111 = a<sup> j-1</sup>  
+c = 10111011 01100111 10101110 10000101 = b<sup> j-1</sup>  
+d = 00111100 01101110 11110011 01110010 = c<sup> j-1</sup>  
+e = 11101100 00101011 01001000 00010000 = d<sup> j-1</sup> + Temp1  
+f = 01010001 00001110 01010010 01111111 = e<sup> j-1</sup>  
+g = 10011011 00000101 01101000 10001100 = f<sup> j-1</sup>  
+h = 00011111 10000011 11011001 10101011 = g<sup> j-1</sup>  
+
+Now that we have updated register values for the first word, we need to repeat the above steps for the remaining words from 2 to 64.
+
+## Step 11: Calculate the new hash values for the computed block.
+
+After completing the calculations from the previous step for each word up to 64th, we can proceed to calculate the intermediate hash value, which will serve as the initial value for the next block, or if it was the last block, as the final result of the algorithm.
+
+To do this, simply add the register values from a to h to the initial values with which we started the calculations for this block.
+
+H<sub>i</sub><sup>(1)</sup> = H<sub>i-1</sub><sup>(1)</sup> + a  
+H<sub>i</sub><sup>(2)</sup> = H<sub>i-1</sub><sup>(2)</sup> + b  
+H<sub>i</sub><sup>(3)</sup> = H<sub>i-1</sub><sup>(3)</sup> + c  
+H<sub>i</sub><sup>(4)</sup> = H<sub>i-1</sub><sup>(4)</sup> + d  
+H<sub>i</sub><sup>(5)</sup> = H<sub>i-1</sub><sup>(5)</sup> + e  
+H<sub>i</sub><sup>(6)</sup> = H<sub>i-1</sub><sup>(6)</sup> + f  
+H<sub>i</sub><sup>(7)</sup> = H<sub>i-1</sub><sup>(7)</sup> + g  
+H<sub>i</sub><sup>(8)</sup> = H<sub>i-1</sub><sup>(8)</sup> + h  
+
+Below are the calculated values for the first block 'i = 1', and these values will be used as the initial values for calculating next intermediate hash value from the next block.
+
+H<sub>1</sub><sup>(1)</sup> = 01101010 00001001 11100110 01100111 + 10110010 00111000 00000000 01101001 = 00011100 01000001 11100110 11010000  
+H<sub>1</sub><sup>(2)</sup> = 10111011 01100111 10101110 10000101 + 11011101 00010001 11100100 01101001 = 10011000 01111001 10010010 11101110  
+H<sub>1</sub><sup>(3)</sup> = 00111100 01101110 11110011 01110010 + 00110100 01101010 11011011 10100111 = 01110000 11011001 11001111 00011001  
+H<sub>1</sub><sup>(4)</sup> = 10100101 01001111 11110101 00111010 + 01100100 01000110 11010111 11110000 = 00001001 10010110 11001101 00101010  
+H<sub>1</sub><sup>(5)</sup> = 01010001 00001110 01010010 01111111 + 01110111 00101010 10100000 01110100 = 11001000 00111000 11110010 11110011  
+H<sub>1</sub><sup>(6)</sup> = 10011011 00000101 01101000 10001100 + 01010010 01111101 10000110 11010011 = 11101101 10000010 11101111 01011111  
+H<sub>1</sub><sup>(7)</sup> = 00011111 10000011 11011001 10101011 + 01011101 00011010 10101100 11011110 = 01111100 10011110 10000110 10001001  
+H<sub>1</sub><sup>(8)</sup> = 01011011 11100000 11001101 00011001 + 01101000 10101000 00110101 10111111 = 11000100 10001001 00000010 11011000  
+
+## Step 12: Calculate the final hash value.
+
+If all sets have been calculated for all blocks, the final hash value is the concatenation of eight 32-bit blocks from the H<sub>n</sub> array (n - number of blocks).
+
+The values calculated at the end of the second (last) block:
+
+H<sub>n</sub><sup>(1)</sup> = 00010010 10110111 11110110 00100011 = 12B7 F623  
+H<sub>n</sub><sup>(2)</sup> = 10111011 11011011 10101100 01001000 = BBDB AC48  
+H<sub>n</sub><sup>(3)</sup> = 11000000 11101101 11111111 11010101 = C0ED FFD5  
+H<sub>n</sub><sup>(4)</sup> = 00011000 10101110 01000011 00101000 = 18AE 4328  
+H<sub>n</sub><sup>(5)</sup> = 00111110 11010111 11010001 10100110 = 3ED7 D1A6  
+H<sub>n</sub><sup>(6)</sup> = 11100001 11011111 00101000 10000101 = E1DF 2885  
+H<sub>n</sub><sup>(7)</sup> = 01111000 00011001 01001101 11001100 = 7819 4DCC  
+H<sub>n</sub><sup>(8)</sup> = 01111000 00000101 01111000 10001110 = 7805 788E  
+
+Now all we need to do is concatenate these values into a single sequence.
+
+SHA-256 hash: H<sub>n</sub><sup>(1)</sup> || H<sub>n</sub><sup>(2)</sup> || H<sub>n</sub><sup>(3)</sup> || H<sub>n</sub><sup>(4)</sup> || H<sub>n</sub><sup>(5)</sup> || H<sub>n</sub><sup>(6)</sup> || H<sub>n</sub><sup>(7)</sup> || H<sub>n</sub><sup>(8)</sup>
+
+SHA-256 hash: 12B7 F623 BBDB AC48 C0ED FFD5 18AE 4328 3ED7 D1A6 E1DF 2885 7819 4DCC 7805 788E
+
+# Special Thanks
+
+The materials thanks to which I learned how the algorithm works:  
+https://helix.stormhub.org/papers/SHA-256.pdf  
+https://eips.ethereum.org/assets/eip-2680/sha256-384-512.pdf  
+
+The algorithm demonstration I used to compute individual values in the above README.md:  
+https://sha256algorithm.com/

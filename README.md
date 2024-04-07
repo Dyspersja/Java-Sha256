@@ -181,7 +181,7 @@ For the Block 1:
 
 Words 0 through 15 have been assigned as initial values from the 512-bit block. Subsequent words from 16 to 63 will be calculated using simple bitwise operations on the previous words, such as rotation, shifting, or XOR operations.
 
-## Step 8: Calculating the remaining 16 to 63 words of the message scheduler
+## Step 8: Calculate the remaining 16 to 63 words of the message scheduler
 
 Starting from word 16, each subsequent word must be computed using the previous ones and the following formula:
 
@@ -280,11 +280,64 @@ W63: 10111001 00111001 01100101 00001110
 
 As you can see, they are filled with values that are impossible to predict, and changing even one more zero to a one in that block would completely alter above values.
 
+## Step 9: Prepare the initial hash value for the new set of words
+
+In this step, we begin the actual computation of the hash value. 
+
+At the beginning of computing the hash value for a new set of words, we assign the hash values to 8 32-bit registers a, b, c, d, e, f, g, h, calculated using the previous set or initial values if it's the first set being computed.
+
+### Calculating the initial values for the first block.
+
+The initial values are obtained by taking the first 32 bits of the fractional part of the square roots of the first 8 prime numbers 2, 3, 5, 7, 11, 13, 17 and 19.
+
+H<sub>0</sub><sup>(1)</sup>: √2 = 1.414213562373095... = 1.01101010000010011110011001100111... = 01101010 00001001 11100110 01100111  
+
+First, we take the nth prime number: **2**  
+We take the square root of that number: **√2**  
+We calculate the decimal representation of that square root: **1.414213562373095...**  
+We convert the decimal representation to binary form: **1.01101010000010011110011001100111...**  
+We take the first 32 bits of the fractional part of the obtained square root in binary form: **01101010 00001001 11100110 01100111**
+
+The obtained number is our initial value for the first register. Remaining values are calculated below.
+
+H<sub>0</sub><sup>(2)</sup>: √3 = 1.732050807568877... = 1.10111011011001111010111010000101... => 10111011 01100111 10101110 10000101  
+H<sub>0</sub><sup>(3)</sup>: √5 = 2.23606797749979... = 10.00111100011011101111001101110010... => 00111100 01101110 11110011 01110010  
+H<sub>0</sub><sup>(4)</sup>: √7 = 2.645751311064591... = 10.10100101010011111111010100111010... => 10100101 01001111 11110101 00111010  
+H<sub>0</sub><sup>(5)</sup>: √11 = 3.3166247903554... = 11.01010001000011100101001001111111... => 01010001 00001110 01010010 01111111  
+H<sub>0</sub><sup>(6)</sup>: √13 = 3.605551275463989... = 11.10011011000001010110100010001100... => 10011011 00000101 01101000 10001100  
+H<sub>0</sub><sup>(7)</sup>: √17 = 4.123105625617661... = 100.00011111100000111101100110101011... => 00011111 10000011 11011001 10101011  
+H<sub>0</sub><sup>(8)</sup>: √19 = 4.358898943540674... = 100.01011011111000001100110100011001... => 01011011 11100000 11001101 00011001  
+
+In implementations of the algorithm, it doesn't make sense to calculate these values every time a new hash value is computed. They are usually hard-coded into the program's code, often in hexadecimal form:
+
+H<sub>0</sub><sup>(1)</sup>: 6A09 E667  
+H<sub>0</sub><sup>(2)</sup>: BB67 AE85  
+H<sub>0</sub><sup>(3)</sup>: 3C6E F372  
+H<sub>0</sub><sup>(4)</sup>: A54F F53A  
+H<sub>0</sub><sup>(5)</sup>: 510E 527F  
+H<sub>0</sub><sup>(6)</sup>: 9B05 688C  
+H<sub>0</sub><sup>(7)</sup>: 1F83 D9AB  
+H<sub>0</sub><sup>(8)</sup>: 5BE0 CD19  
+
+These values are only being used during the calculation of the hash value for the first block as initial values. For the next block, the starting values will be the values calculated at the end of the previous block, as will be shown in the following steps.
+
+At the end of this step, we assign values to the registers calculated in the previous step 'i - 1', or for the first step initial values calculated earlier.
+
+a = H<sub>i-1</sub><sup>(1)</sup>  
+b = H<sub>i-1</sub><sup>(2)</sup>  
+c = H<sub>i-1</sub><sup>(3)</sup>  
+d = H<sub>i-1</sub><sup>(4)</sup>  
+e = H<sub>i-1</sub><sup>(5)</sup>  
+f = H<sub>i-1</sub><sup>(6)</sup>  
+g = H<sub>i-1</sub><sup>(7)</sup>  
+h = H<sub>i-1</sub><sup>(8)</sup>  
+
+
+
 <!-- Next steps to be added -->
 
 <!--
 
-## Step 9:
 ## Step 10:
 ## Step 11:
 ## Step 12: 
